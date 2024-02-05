@@ -1,5 +1,5 @@
 import os
 os.remove("TestFile.txt")
 
-f = open("/home/TestFile.txt", "x")
+f = open("cd/home/ubuntu/Desktop/TestFile.txt", "x")
 f.write("Text")
