@@ -17,6 +17,7 @@
 
 # Authors: Gilbert #
 
+from re import T
 import rospy
 import math
 from sensor_msgs.msg import LaserScan
@@ -66,6 +67,8 @@ class Obstacle():
     def obstacle(self):
         twist = Twist()
         turtlebot_moving = True
+        turning_left = False
+        turning_right = False
 
         while not rospy.is_shutdown():
             lidar_distances = self.get_scan()
@@ -78,6 +81,33 @@ class Obstacle():
                     self._cmd_pub.publish(twist)
                     turtlebot_moving = False
                     rospy.loginfo('Stop!')
+
+                if not turning_left and not turning_right:
+                    if lidar_distances.index(min_distance) < len(lidar_distances) / 2:
+                        turning_right = True
+                    else: 
+                        turning_left = True
+            
+            if turning_left:
+                twist.linear.x = -LINEAR_VEL
+                twist.linear.z = LINEAR_VEL
+                self._cmd_pub.publish(twist)
+                rospy.loginfo('Turning Left')
+
+                if min_distance >= SAFE_STOP_DISTANCE:
+                    turning_left = False
+                    turtlebot_moving = True
+            
+            if turning_right:
+                twist.linear.x = -LINEAR_VEL
+                twist.linear.z = -LINEAR_VEL
+                self._cmd_pub.publish(twist)
+                rospy.loginfo('Turning Rigt')
+
+                if min_distance >= SAFE_STOP_DISTANCE:
+                    turning_right = False
+                    turtlebot_moving = True
+            
             else:
                 twist.linear.x = LINEAR_VEL
                 twist.angular.z = 0.0
